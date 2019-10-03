@@ -1,0 +1,25 @@
+{
+  "name": "proj",
+  "version": "1.0.0",
+  "description": "",
+  "main": "trader.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shuang854/trader.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shuang854/trader/issues"
+  },
+  "homepage": "https://github.com/shuang854/trader#readme",
+  "dependencies": {
+    "@types/express": "^4.17.1",
+    "alphavantage": "^1.2.5",
+    "chart.js": "^2.8.0",
+    "express": "^4.17.1"
+  }
+}
