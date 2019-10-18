@@ -7,13 +7,32 @@
     <script src="https://www.chartjs.org/samples/latest/utils.js"></script>
     
     <button id="start">Start</button>
+    <div id="buy">
+        <button id="buyButton">Buy</button>
+        Shares: <input type="number" id="buyShares" value="100"><br>
+    </div>
+    <div id="sell">
+        <button id="sellButton">Sell</button>
+        Shares: <input type="number" id="sellShares" value="100"><br>
+    </div>
+    <div id="money">Total Funds: $100000</div>
+    <div id="shares">Total Shares: 0</div>
     <div class="chart-container" style="position: relative; height:40vh; width:50vw">
         <canvas id="myLineChart"></canvas>
     </div>
     <script>
         const url = 'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=MSFT&interval=1min&outputsize=full&apikey=9DGTNH73TAGCTD8X';
         var pts = [];
+        var money = 100000;
+        var shares = 0;
+
+        // hide buttons on page open
+        document.getElementById("start").style.display = "none";
+        document.getElementById("buy").style.display = "none";
+        document.getElementById("sell").style.display = "none";
+
         function requestFile(url) {
+            // retrieve stock data
             const xhr = new XMLHttpRequest();
             xhr.open('GET', url, true);
             xhr.responseType = 'json';
@@ -24,6 +43,7 @@
             xhr.send(null);
             
             function callback(xhr) {
+                // organizing JSON stock data
                 let response;
                 response = xhr.target.response;
                 for (var timeStamp in response['Time Series (1min)']) {
@@ -34,6 +54,7 @@
                 }
                 pts.reverse();
 
+                // chart configuration
                 config = {
                     type: 'line',
                     data: {
@@ -89,6 +110,10 @@
 
                 var ctx = document.getElementById('myLineChart').getContext('2d');
                 window.myLine = new Chart(ctx, config);
+
+                document.getElementById('start').style.display = "block";
+                document.getElementById('start').addEventListener('click', begin);
+
             }
         }
         
@@ -100,11 +125,16 @@
             requestFile(url);
         };
 
-        document.getElementById('start').addEventListener('click', begin);
-
         // start showing prices on plot
         function begin() {
             document.getElementById('start').removeEventListener('click', begin);
+
+            // display buy/sell icons
+            document.getElementById('buy').style.display = "inline";
+            document.getElementById('sell').style.display = "inline";
+            document.getElementById('buyButton').addEventListener('click', buy);
+            document.getElementById('sellButton').addEventListener('click', sell);
+
             var timer = setInterval(function () {
                 config.data.labels.push(pts[currTime][0]);
                 config.data.datasets.forEach(function (dataset) {
@@ -119,6 +149,38 @@
                     clearInterval(timer);
                 }
             }, 250);
+        }
+
+        // buy shares: 
+        //  - get number of shares from input 
+        //  - subtract from total funds (var money)
+        //  - update total shares
+        function buy() {
+            var sharesIn = document.getElementById("buyShares").value;
+            var cost = pts[currTime][1] * sharesIn
+            if (money > cost) {
+                money -= cost;
+            } else {
+                sharesIn = Math.floor(money / pts[currTime][1]);
+                money -= pts[currTime][1] * sharesIn;
+            }
+            shares += sharesIn * 1;
+            document.getElementById("money").innerHTML = "Total Funds: $" + money.toFixed(2);
+            document.getElementById("shares").innerHTML = "Total Shares: " + shares;
+        }
+
+        // sell shares: similar to buy shares
+        function sell() {
+            var sharesOut = document.getElementById("sellShares").value;
+            if (shares > sharesOut) {
+                money += pts[currTime][1] * sharesOut;
+                shares -= sharesOut * 1;
+            } else {
+                money += pts[currTime][1] * shares;
+                shares -= shares;
+            }
+            document.getElementById("money").innerHTML = "Total Funds: $" + money.toFixed(2);
+            document.getElementById("shares").innerHTML = "Total Shares: " + shares;
         }
     </script>
 </html>
